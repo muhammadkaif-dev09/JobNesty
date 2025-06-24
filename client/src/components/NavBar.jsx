@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import { useTheme } from "./ThemeContext";
@@ -7,7 +7,9 @@ import { useTheme } from "./ThemeContext";
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [flash, setFlash] = useState("");
+  const [role, setRole] = useState(""); // ✅ Role state
   const navigate = useNavigate();
+  const { darkMode, setDarkMode } = useTheme(); // ✅ Theme toggle
 
   // Toggle dropdown
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -18,9 +20,7 @@ const NavBar = () => {
       const res = await axios.post(
         "http://localhost:3000/auth/logout",
         {},
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       if (res.data.success) {
         setFlash("Logout Successful!");
@@ -35,7 +35,22 @@ const NavBar = () => {
     }
   };
 
-  const { darkMode, setDarkMode } = useTheme(); // ✅ Theme toggle
+  // ✅ Fetch user role on mount
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/user/profile", {
+          withCredentials: true,
+        });
+        setRole(res.data.user.role); // e.g., "recruiter" or "job_seeker"
+      } catch (error) {
+        console.error("Failed to fetch user role:", error.message);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -57,12 +72,17 @@ const NavBar = () => {
           >
             Profile
           </NavLink>
-          <NavLink
-            to="/admin"
-            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 font-medium"
-          >
-            Admin
-          </NavLink>
+
+          {/* ✅ Admin link only for recruiters */}
+          {role === "recruiter" && (
+            <NavLink
+              to="/admin"
+              className="text-gray-700 dark:text-gray-200 hover:text-blue-600 font-medium"
+            >
+              Admin
+            </NavLink>
+          )}
+
           <button
             onClick={logoutUser}
             className="text-gray-700 dark:text-gray-200 hover:text-blue-600 font-medium"
@@ -70,7 +90,6 @@ const NavBar = () => {
             Logout
           </button>
 
-          {/* 🌗 Dark/Light Toggle */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             className="cursor-pointer text-xl text-gray-700 dark:text-gray-200 hover:text-blue-600 transition"
@@ -82,7 +101,6 @@ const NavBar = () => {
 
         {/* Mobile Hamburger */}
         <div className="md:hidden flex items-center gap-4">
-          {/* 🌗 Toggle in mobile too */}
           <button
             onClick={() => setDarkMode(!darkMode)}
             className="text-xl text-gray-700 dark:text-gray-200 hover:text-blue-600"
@@ -115,13 +133,18 @@ const NavBar = () => {
           >
             Profile
           </NavLink>
-          <NavLink
-            to="/admin"
-            onClick={toggleMenu}
-            className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 font-medium"
-          >
-            Admin
-          </NavLink>
+
+          {/* ✅ Admin link in mobile view */}
+          {role === "recruiter" && (
+            <NavLink
+              to="/admin"
+              onClick={toggleMenu}
+              className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 font-medium"
+            >
+              Admin
+            </NavLink>
+          )}
+
           <button
             onClick={() => {
               logoutUser();

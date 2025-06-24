@@ -23,7 +23,7 @@ module.exports.addJobs = async (req, res) => {
       title,
       description,
       companyName,
-      companyLogo,
+      companyLogo: req.file?.path,
       location,
       jobType,
       salaryRange,
@@ -64,8 +64,15 @@ module.exports.applyJob = async (req, res) => {
         .json({ success: false, message: "Already applied" });
     }
 
+    // ✅ Save the applicant ID into the job document
     job.applicants.push(jobSeekerId);
     await job.save();
+    return res.status(200).json({
+      success: true,
+      message: "Thanks for applying for the job!",
+      jobId,
+      appliedBy: jobSeekerId,
+    });
   } catch (error) {
     console.error("Apply Job Error:", error);
     res
@@ -102,19 +109,35 @@ module.exports.getJobDetails = async (req, res) => {
 };
 
 // Get a single Job Details:
+const mongoose = require("mongoose");
+
 module.exports.getSingleJobDetail = async (req, res) => {
-  const jobId = req.params.jobId; // ✅ This matches your route param
+  const jobId = req.params.jobId;
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(jobId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid Job ID",
+    });
+  }
+
   try {
-    const jobDetails = await jobModel.findById(jobId);
+    const jobDetails = await jobModel
+      .findById(jobId)
+      .populate("createdBy", "fullName email");
+
     if (!jobDetails) {
       return res.status(404).json({
         success: false,
         message: "Job not found!",
       });
     }
-    res.status(200).json({ success: true, jobDetails });
+
+    res
+      .status(200)
+      .json({ success: true, jobDetails, currentUserId: req.user?._id });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching job:", err.message);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -129,5 +152,80 @@ module.exports.getRecruiterJobs = async (req, res) => {
     res.status(200).json({ success: true, jobs });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching jobs" });
+  }
+};
+
+// List of Jobs that was created by a particulare recruiter user
+module.exports.getJobsByRecruiters = async (req, res) => {
+  try {
+    const recruiterId = req.user._id;
+    const jobs = await jobModel
+      .find({ createdBy: recruiterId })
+      .sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      jobs,
+    });
+  } catch (error) {
+    console.error("Error getting recruiter's jobs:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load job listings",
+    });
+  }
+};
+
+// Delete individual jobs posted by a recruiter
+module.exports.deleteJobPostById = async (req, res) => {
+  try {
+    const jobPostId = req.params.id;
+    const deletedJob = await jobModel.findByIdAndDelete(jobPostId);
+    if (!deletedJob) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Job delete Successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting job:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting job",
+    });
+  }
+};
+
+// See Who is applied for a JOB particullary
+// controllers/jobController.js
+
+module.exports.getJobApplicants = async (req, res) => {
+  const { jobId } = req.params;
+
+  try {
+    const job = await jobModel.findById(jobId).populate(
+      "applicants",
+      "fullName email phone"
+    );
+
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      applicants: job.applicants,
+    });
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching applicants",
+    });
   }
 };

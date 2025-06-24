@@ -2,15 +2,11 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
 import Profile from "../pages/UserProfile";
-import AuthNavbar from "./components/AuthNavBar";
 import SingleJobDetails from "../pages/SingleJobDetails";
-import AuthForm from "./components/AuthForm";
-import AdminAddJob from "../pages/AddAdminJob";
 import Admin from "../pages/Admin";
 import ApplicantList from "../pages/ApplicantList";
+import PostJobPage from "../pages/PostJobAdmin";
 
 const router = createBrowserRouter([
   {
@@ -59,10 +55,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin/addJob",
-    element: <AdminAddJob />,
+    element: <PostJobPage />,
   },
   {
-    path: "/admin/allapplicantlist",
+    path: "/admin/allapplicantlist/:jobId",
     element: <ApplicantList />,
   },
 ]);

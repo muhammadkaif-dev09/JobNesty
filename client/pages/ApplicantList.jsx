@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NavBar from "../src/components/NavBar";
 import Footer from "../src/components/Footer";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
 const ApplicantList = () => {
+  const { jobId } = useParams();
+  const [applicants, setApplicants] = useState([]);
+
+  console.log(jobId)
+
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      const res = await axios.get(
+        `http://localhost:3000/admin/job-applicants/${jobId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      setApplicants(res.data.applicants);
+    };
+
+    fetchApplicants();
+  }, [jobId]);
+  console.log(applicants);
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
       <NavBar />
@@ -18,65 +39,36 @@ const ApplicantList = () => {
             </span>
           </h2>
 
-          {/* Applicant Card 1 */}
-          <div className="border border-gray-300 dark:border-gray-700 rounded p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Aman Verma
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Email: aman@example.com • Phone: +91 98765 43210
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Select Candidate
-              </button>
-              <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete Applicant
-              </button>
-            </div>
-          </div>
-
-          {/* Applicant Card 2 */}
-          <div className="border border-gray-300 dark:border-gray-700 rounded p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Priya Shah
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Email: priya@example.com • Phone: +91 91234 56789
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Select Candidate
-              </button>
-              <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete Applicant
-              </button>
-            </div>
-          </div>
-
-          {/* Applicant Card 3 */}
-          <div className="border border-gray-300 dark:border-gray-700 rounded p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Rahul Mehta
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Email: rahul@example.com • Phone: +91 99887 77665
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                Select Candidate
-              </button>
-              <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete Applicant
-              </button>
-            </div>
-          </div>
+          {applicants.length === 0 ? (
+            <p className="text-gray-600 dark:text-gray-300">
+              No one has applied yet.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {applicants.map((applicant) => (
+                <li
+                  key={applicant._id}
+                  className="bg-gray-100 dark:bg-gray-700 p-4 rounded"
+                >
+                  <p>
+                    <strong>Name:</strong> {applicant.fullName}
+                  </p>
+                  <p>
+                    <strong>Email:</strong>{" "}
+                    <a
+                      href={`mailto:${applicant.email}`}
+                      className="text-blue-400"
+                    >
+                      {applicant.email}
+                    </a>
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {applicant.phone || "N/A"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </main>
 
