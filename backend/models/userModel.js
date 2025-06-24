@@ -24,7 +24,11 @@ const userSchema = mongoose.Schema({
   },
   profilePic: {
     type: String,
-    default: "",
+    default: function () {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        this.fullName
+      )}&background=random&color=fff&bold=true`;
+    },
   },
   skills: [String],
   socialLinks: {
@@ -32,7 +36,7 @@ const userSchema = mongoose.Schema({
     github: String,
     portfolio: String,
   },
-  
+
   createdAt: {
     type: Date,
     default: Date.now,
