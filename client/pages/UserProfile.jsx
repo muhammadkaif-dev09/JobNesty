@@ -4,12 +4,33 @@ import axios from "axios";
 import { FaCamera, FaPlus } from "react-icons/fa";
 import Footer from "../src/components/Footer";
 import NavBar from "../src/components/NavBar";
+import { useNavigate } from "react-router-dom";
 
 const UserProfile = () => {
   const [profileData, setProfileData] = useState({});
   const [loading, setLoading] = useState(true);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  
+  const navigate = useNavigate();
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/user/profile", {
+          withCredentials: true,
+        });
+        if (!res.data.success) {
+          navigate("/login", {
+            state: { message: "You need to login first", fromProtected: true },
+          });
+        }
+      } catch (error) {
+        navigate("/login", { state: { message: "You need to login first" } });
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const [formData, setFormData] = useState({
     fullName: "",

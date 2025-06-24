@@ -10,6 +10,24 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/user/profile", {
+          withCredentials: true,
+        });
+        if (!res.data.success) {
+          navigate("/login", {
+            state: { message: "You need to login first", fromProtected: true },
+          });
+        }
+      } catch (error) {
+        navigate("/login", { state: { message: "You need to login first" } });
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+  useEffect(() => {
     const fetchAllJobPost = async () => {
       try {
         const res = await axios.get("http://localhost:3000/admin/my-jobs", {

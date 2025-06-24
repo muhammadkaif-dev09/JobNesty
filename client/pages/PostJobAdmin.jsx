@@ -6,6 +6,7 @@ import uploadImage from "../src/assets/Upload.png";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const PostJobPage = () => {
   const [logoPreview, setLogoPreview] = useState(null);
@@ -15,6 +16,25 @@ const PostJobPage = () => {
 
   //   create a navigate function
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/user/profile", {
+          withCredentials: true,
+        });
+        if (!res.data.success) {
+          navigate("/login", {
+            state: { message: "You need to login first", fromProtected: true },
+          });
+        }
+      } catch (error) {
+        navigate("/login", { state: { message: "You need to login first" } });
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   // Add skill to list
   const handleAddSkill = () => {
