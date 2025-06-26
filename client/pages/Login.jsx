@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as Yup from "yup";
-import AuthNavbar from "../src/components/AuthNavBar";
+import AuthNavbar from "../src/components/AuthNavbar";
 import Footer from "../src/components/Footer";
 
 const Login = () => {
