@@ -6,7 +6,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../src/components/Footer";
 import NavBar from "../src/components/NavBar";
-import AuthNavbar from "../src/components/AuthNavBar";
+import AuthNavbar from "../src/components/AuthNavbar";
 
 const Register = () => {
   const navigate = useNavigate();
